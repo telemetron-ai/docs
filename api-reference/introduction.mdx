@@ -1,33 +1,106 @@
 ---
-title: 'Introduction'
-description: 'Example section for showcasing API endpoints'
+title: 'API Reference'
+description: 'Telemetron External API documentation for customer and device management'
 ---
 
-<Note>
-  If you're not looking to build API reference documentation, you can delete
-  this section by removing the api-reference folder.
-</Note>
+## Welcome to Telemetron API
 
-## Welcome
+The Telemetron External API (ext-v1) provides programmatic access to synchronize customer and device data with Telemetron. This API is designed for **hardware companies** who use Telemetron's AI-powered support platform.
 
-There are two ways to build API documentation: [OpenAPI](https://mintlify.com/docs/api-playground/openapi/setup) and [MDX components](https://mintlify.com/docs/api-playground/mdx/configuration). For the starter kit, we are using the following OpenAPI specification.
+<Info>
+  **Why these APIs exist**: Telemetron uses telemetry data from your devices to diagnose customer issues intelligently. These APIs allow you to keep customer and device ownership information synchronized with Telemetron, enabling the platform to automatically correlate incoming telemetry with the correct customers and provide context-aware support.
+</Info>
 
-<Card
-  title="Plant Store Endpoints"
-  icon="leaf"
-  href="https://github.com/mintlify/starter/blob/main/api-reference/openapi.json"
->
-  View the OpenAPI specification file
-</Card>
+## Base URL
+
+```
+https://admin.telemetron.ai/api/ext-v1
+```
 
 ## Authentication
 
-All API endpoints are authenticated using Bearer tokens and picked up from the specification file.
+All API endpoints require authentication using an API key. Include your API key in the request headers:
 
-```json
-"security": [
-  {
-    "bearerAuth": []
-  }
-]
 ```
+x-api-key: your_api_key_here
+```
+
+### Getting Your API Key
+
+1. Log into your Telemetron dashboard
+2. Navigate to Settings > API Keys
+3. Generate a new API key for your organization
+
+<Warning>
+  Keep your API keys secure and never expose them in client-side code or public repositories.
+</Warning>
+
+## API Overview
+
+The Telemetron API is organized around REST principles and consists of two main resource groups:
+
+### Customer Management
+Sync your customer data with Telemetron so the platform knows who your customers are when their devices send telemetry:
+- Create or update customers
+- Query customers by email
+- Retrieve customer details by ID
+
+### Device Assignment
+Maintain device-to-customer mappings so Telemetron can associate telemetry data with the correct customer accounts:
+- Assign devices to customer owners
+- Unassign devices from customer owners
+
+<Warning>
+  **Keep Data Synchronized**: For Telemetron to provide accurate, intelligent support, it's essential to keep your customer and device mappings up-to-date. When a customer registers a device, transfers ownership, or makes account changes, sync these updates to Telemetron immediately.
+</Warning>
+
+## Response Format
+
+All API responses return JSON with consistent structure:
+
+**Success Response:**
+```json
+{
+  "success": true,
+  "message": "Operation completed successfully",
+  "data": { }
+}
+```
+
+**Error Response:**
+```json
+{
+  "error": "Error description"
+}
+```
+
+## Error Codes
+
+| Status Code | Description |
+|------------|-------------|
+| 200 | Success |
+| 400 | Bad Request - Invalid parameters |
+| 401 | Unauthorized - Invalid or missing API key |
+| 404 | Not Found - Resource doesn't exist |
+| 409 | Conflict - Resource already exists |
+| 500 | Internal Server Error |
+
+## How It Works
+
+<Steps>
+  <Step title="Your devices send telemetry">
+    Your hardware devices send telemetry data (metrics, logs, events) to Telemetron's telemetry ingestion endpoints.
+  </Step>
+  
+  <Step title="Telemetron maps telemetry to customers">
+    Using the device-to-customer mappings you maintain via these APIs, Telemetron identifies which customer owns each device sending telemetry.
+  </Step>
+  
+  <Step title="AI-powered diagnosis">
+    Telemetron's AI analyzes the telemetry data in the context of the customer, device history, and patterns to diagnose issues intelligently.
+  </Step>
+  
+  <Step title="Intelligent support">
+    Telemetron provides proactive support, automated responses, or alerts your support team with actionable insights about customer issues.
+  </Step>
+</Steps>

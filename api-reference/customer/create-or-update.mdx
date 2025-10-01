@@ -1,0 +1,171 @@
+---
+title: 'Create or Update Customer'
+api: 'POST /api/ext-v1/customer/createOrUpdateCustomer'
+description: 'Create a new customer or update an existing customer by ID'
+---
+
+## Overview
+
+This endpoint allows you to sync customer information to Telemetron. The behavior depends on whether you provide a `telemetronCustomerId`:
+
+- **Without `telemetronCustomerId`**: Creates a new customer or returns an error if the email already exists
+- **With `telemetronCustomerId`**: Updates the existing customer with the provided ID
+
+<Info>
+  **Sync Your Customer Data**: Keep customer information in Telemetron up-to-date so the platform can provide personalized support. When combined with device assignments, this enables Telemetron to correlate telemetry data with customer context for intelligent issue diagnosis.
+</Info>
+
+## Authentication
+
+<ParamField header="x-api-key" type="string" required>
+  Your organization's API key
+</ParamField>
+
+## Request Body
+
+<ParamField body="email" type="string" required>
+  Customer's email address (used as unique identifier)
+</ParamField>
+
+<ParamField body="name" type="string">
+  Customer's full name (defaults to email prefix if not provided)
+</ParamField>
+
+<ParamField body="phone" type="string">
+  Customer's phone number
+</ParamField>
+
+<ParamField body="address" type="string">
+  Customer's address
+</ParamField>
+
+<ParamField body="telemetronCustomerId" type="string">
+  Existing customer ID for updates. If provided, the endpoint will update the customer with this ID.
+</ParamField>
+
+## Response
+
+<ResponseField name="success" type="boolean">
+  Indicates if the operation was successful
+</ResponseField>
+
+<ResponseField name="telemetronCustomerId" type="string">
+  The unique identifier for the customer
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Description of the operation result
+</ResponseField>
+
+## Examples
+
+<RequestExample>
+
+```bash cURL - Create Customer
+curl -X POST https://admin.telemetron.ai/api/ext-v1/customer/createOrUpdateCustomer \
+  -H "x-api-key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "John Doe",
+    "email": "john.doe@example.com",
+    "phone": "+1234567890",
+    "address": "123 Main St, City, State 12345"
+  }'
+```
+
+```bash cURL - Update Customer
+curl -X POST https://admin.telemetron.ai/api/ext-v1/customer/createOrUpdateCustomer \
+  -H "x-api-key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "telemetronCustomerId": "customer-uuid-123",
+    "name": "John Doe Updated",
+    "email": "john.doe@example.com",
+    "phone": "+1234567890"
+  }'
+```
+
+```javascript JavaScript
+const response = await fetch('https://admin.telemetron.ai/api/ext-v1/customer/createOrUpdateCustomer', {
+  method: 'POST',
+  headers: {
+    'x-api-key': 'your_api_key_here',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    name: 'John Doe',
+    email: 'john.doe@example.com',
+    phone: '+1234567890',
+    address: '123 Main St, City, State 12345'
+  })
+});
+
+const data = await response.json();
+```
+
+```python Python
+import requests
+
+response = requests.post(
+    'https://admin.telemetron.ai/api/ext-v1/customer/createOrUpdateCustomer',
+    headers={
+        'x-api-key': 'your_api_key_here',
+        'Content-Type': 'application/json'
+    },
+    json={
+        'name': 'John Doe',
+        'email': 'john.doe@example.com',
+        'phone': '+1234567890',
+        'address': '123 Main St, City, State 12345'
+    }
+)
+
+data = response.json()
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Success - Created
+{
+  "success": true,
+  "telemetronCustomerId": "cust_a1b2c3d4e5f6",
+  "message": "Customer created successfully"
+}
+```
+
+```json Success - Updated
+{
+  "success": true,
+  "telemetronCustomerId": "cust_a1b2c3d4e5f6",
+  "message": "Customer updated successfully"
+}
+```
+
+```json Error - Already Exists
+{
+  "error": "Customer already exists with this email. Specify telemetronCustomerId to update fields.",
+  "telemetronCustomerId": "cust_a1b2c3d4e5f6"
+}
+```
+
+```json Error - Not Found
+{
+  "error": "Customer not found or does not belong to this organization"
+}
+```
+
+</ResponseExample>
+
+## Status Codes
+
+| Code | Description |
+|------|-------------|
+| 200 | Customer created or updated successfully |
+| 400 | Invalid request (missing required fields or invalid JSON) |
+| 401 | Invalid or missing API key |
+| 404 | Customer not found (when updating with telemetronCustomerId) |
+| 409 | Customer already exists with the provided email |
+| 500 | Internal server error |
+

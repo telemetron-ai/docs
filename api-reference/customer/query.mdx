@@ -1,0 +1,162 @@
+---
+title: 'Query Customer by Email'
+api: 'POST /api/ext-v1/customer/queryCustomer'
+description: 'Retrieve customer information by email address'
+---
+
+## Overview
+
+This endpoint allows you to query and retrieve customer information using their email address. This is useful when you need to look up a customer but only have their email.
+
+<Tip>
+  The response includes the `devices` array, showing all devices assigned to this customer. This is particularly useful for support scenarios where you need to see all devices sending telemetry for a specific customer.
+</Tip>
+
+## Authentication
+
+<ParamField header="x-api-key" type="string" required>
+  Your organization's API key
+</ParamField>
+
+## Request Body
+
+<ParamField body="email" type="string" required>
+  The email address of the customer to query
+</ParamField>
+
+## Response
+
+<ResponseField name="id" type="string">
+  The unique customer identifier (telemetronCustomerId)
+</ResponseField>
+
+<ResponseField name="organizationId" type="string">
+  The organization ID this customer belongs to
+</ResponseField>
+
+<ResponseField name="name" type="string">
+  Customer's full name
+</ResponseField>
+
+<ResponseField name="email" type="string">
+  Customer's email address
+</ResponseField>
+
+<ResponseField name="phone" type="string">
+  Customer's phone number (if provided)
+</ResponseField>
+
+<ResponseField name="address" type="string">
+  Customer's address (if provided)
+</ResponseField>
+
+<ResponseField name="devices" type="array">
+  Array of device identifiers assigned to this customer
+</ResponseField>
+
+<ResponseField name="metadata" type="object">
+  Additional customer metadata
+</ResponseField>
+
+<ResponseField name="createdAt" type="string">
+  ISO 8601 timestamp of when the customer was created
+</ResponseField>
+
+<ResponseField name="updatedAt" type="string">
+  ISO 8601 timestamp of when the customer was last updated
+</ResponseField>
+
+## Examples
+
+<RequestExample>
+
+```bash cURL
+curl -X POST https://admin.telemetron.ai/api/ext-v1/customer/queryCustomer \
+  -H "x-api-key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "john.doe@example.com"
+  }'
+```
+
+```javascript JavaScript
+const response = await fetch('https://admin.telemetron.ai/api/ext-v1/customer/queryCustomer', {
+  method: 'POST',
+  headers: {
+    'x-api-key': 'your_api_key_here',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    email: 'john.doe@example.com'
+  })
+});
+
+const customer = await response.json();
+```
+
+```python Python
+import requests
+
+response = requests.post(
+    'https://admin.telemetron.ai/api/ext-v1/customer/queryCustomer',
+    headers={
+        'x-api-key': 'your_api_key_here',
+        'Content-Type': 'application/json'
+    },
+    json={
+        'email': 'john.doe@example.com'
+    }
+)
+
+customer = response.json()
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Success
+{
+  "id": "cust_a1b2c3d4e5f6",
+  "organizationId": "org_123456",
+  "name": "John Doe",
+  "email": "john.doe@example.com",
+  "phone": "+1234567890",
+  "address": "123 Main St, City, State 12345",
+  "devices": ["device_001", "device_002"],
+  "metadata": {},
+  "createdAt": "2025-10-01T12:00:00Z",
+  "updatedAt": "2025-10-01T14:30:00Z"
+}
+```
+
+```json Error - Not Found
+{
+  "error": "Customer not found"
+}
+```
+
+```json Error - Missing Email
+{
+  "error": "Email is required"
+}
+```
+
+</ResponseExample>
+
+## Status Codes
+
+| Code | Description |
+|------|-------------|
+| 200 | Customer found and returned successfully |
+| 400 | Invalid request (missing email or invalid JSON) |
+| 401 | Invalid or missing API key |
+| 404 | Customer not found with the provided email |
+| 500 | Internal server error |
+
+## Notes
+
+- The email lookup is case-insensitive
+- Only customers belonging to your organization will be returned
+- The `devices` array contains device identifiers that are assigned to this customer
+

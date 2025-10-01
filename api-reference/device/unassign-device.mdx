@@ -1,0 +1,179 @@
+---
+title: 'Unassign Device from Owner'
+api: 'POST /api/ext-v1/deviceAssignment/unassignDeviceFromOwner'
+description: 'Remove a device assignment from a specific customer owner'
+---
+
+## Overview
+
+This endpoint removes a device assignment from a specific customer. The device and customer records remain in the system, but the association between them is removed.
+
+<Warning>
+  **Telemetry Impact**: After unassigning a device, any telemetry sent from this device will no longer be associated with this customer. Make sure to reassign the device to a new owner if the device is still in use.
+</Warning>
+
+## Authentication
+
+<ParamField header="x-api-key" type="string" required>
+  Your organization's API key
+</ParamField>
+
+## Request Body
+
+<ParamField body="deviceIdentifier" type="string" required>
+  The unique identifier for the device (e.g., serial number, MAC address)
+</ParamField>
+
+<ParamField body="customerEmail" type="string" required>
+  The email address of the customer to unassign the device from
+</ParamField>
+
+## Response
+
+<ResponseField name="success" type="boolean">
+  Indicates if the operation was successful
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Description of the operation result
+</ResponseField>
+
+<ResponseField name="customerId" type="string">
+  The unique identifier of the customer
+</ResponseField>
+
+<ResponseField name="deviceIdentifier" type="string">
+  The device identifier that was unassigned
+</ResponseField>
+
+<ResponseField name="devicesRemaining" type="array">
+  Array of device identifiers still assigned to this customer after the unassignment
+</ResponseField>
+
+## Examples
+
+<RequestExample>
+
+```bash cURL
+curl -X POST https://admin.telemetron.ai/api/ext-v1/deviceAssignment/unassignDeviceFromOwner \
+  -H "x-api-key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "deviceIdentifier": "SN-12345-ABCDE",
+    "customerEmail": "john.doe@example.com"
+  }'
+```
+
+```javascript JavaScript
+const response = await fetch(
+  'https://admin.telemetron.ai/api/ext-v1/deviceAssignment/unassignDeviceFromOwner',
+  {
+    method: 'POST',
+    headers: {
+      'x-api-key': 'your_api_key_here',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      deviceIdentifier: 'SN-12345-ABCDE',
+      customerEmail: 'john.doe@example.com'
+    })
+  }
+);
+
+const result = await response.json();
+```
+
+```python Python
+import requests
+
+response = requests.post(
+    'https://admin.telemetron.ai/api/ext-v1/deviceAssignment/unassignDeviceFromOwner',
+    headers={
+        'x-api-key': 'your_api_key_here',
+        'Content-Type': 'application/json'
+    },
+    json={
+        'deviceIdentifier': 'SN-12345-ABCDE',
+        'customerEmail': 'john.doe@example.com'
+    }
+)
+
+result = response.json()
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Success
+{
+  "success": true,
+  "message": "Device successfully unassigned from customer",
+  "customerId": "cust_a1b2c3d4e5f6",
+  "deviceIdentifier": "SN-12345-ABCDE",
+  "devicesRemaining": ["SN-67890-FGHIJ"]
+}
+```
+
+```json Success - No Devices Remaining
+{
+  "success": true,
+  "message": "Device successfully unassigned from customer",
+  "customerId": "cust_a1b2c3d4e5f6",
+  "deviceIdentifier": "SN-12345-ABCDE",
+  "devicesRemaining": []
+}
+```
+
+```json Error - Customer Not Found
+{
+  "error": "Customer not found for this organization"
+}
+```
+
+```json Error - Device Not Assigned
+{
+  "error": "Device is not assigned to this customer",
+  "customerId": "cust_a1b2c3d4e5f6",
+  "deviceIdentifier": "SN-12345-ABCDE",
+  "currentDevices": ["SN-67890-FGHIJ", "SN-11111-KKKKK"]
+}
+```
+
+```json Error - Invalid Email
+{
+  "error": "Invalid email format"
+}
+```
+
+</ResponseExample>
+
+## Status Codes
+
+| Code | Description |
+|------|-------------|
+| 200 | Device successfully unassigned from customer |
+| 400 | Invalid request (missing required fields, invalid email format, or device not assigned to customer) |
+| 401 | Invalid or missing API key |
+| 404 | Customer not found in your organization |
+| 500 | Internal server error |
+
+## Notes
+
+- **Email validation**: The endpoint validates email format before processing
+- **Customer persistence**: The customer record is not deleted, only the device assignment is removed
+- **Device persistence**: The device record remains in the system
+- **Remaining devices**: The response includes a list of devices still assigned to the customer, allowing you to track their current device inventory
+- **Non-destructive**: This operation only removes the association; it does not delete the device or customer records
+
+## Use Cases
+
+- **Device returns**: When a customer returns or replaces a device, unassign it so telemetry is no longer routed to them
+- **Warranty transfers**: When transferring a device warranty to a different customer, unassign from the old owner first
+- **Device ownership changes**: When a device is transferred from one customer to another (unassign from old owner, then assign to new owner)
+- **Account cleanup**: When removing old or inactive devices from a customer's account
+
+<Tip>
+  **Device Transfers**: To transfer a device from one customer to another, first call this unassign endpoint, then immediately call the [Assign Device](/api-reference/device/assign-device) endpoint with the new owner's email. This ensures telemetry is routed to the correct customer without any gaps.
+</Tip>
+

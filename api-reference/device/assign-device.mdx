@@ -1,0 +1,220 @@
+---
+title: 'Assign Device to Owners'
+api: 'POST /api/ext-v1/deviceAssignment/assignDeviceToOwners'
+description: 'Assign a device to one or multiple customer owners'
+---
+
+## Overview
+
+This endpoint allows you to assign a single device to one or multiple customers (owners). If the customers don't exist, they will be automatically created. Optionally, you can also auto-create the device if it doesn't exist in your telemetron account.
+
+<Info>
+  **Why this matters**: When you assign a device to a customer, you're creating the mapping that allows Telemetron to correlate device telemetry with the correct customer account. This enables Telemetron to provide intelligent, context-aware support based on real device behavior.
+</Info>
+
+## Authentication
+
+<ParamField header="x-api-key" type="string" required>
+  Your organization's API key
+</ParamField>
+
+## Request Body
+
+<ParamField body="deviceIdentifier" type="string" required>
+  The unique identifier for the device (e.g., serial number, MAC address)
+</ParamField>
+
+<ParamField body="customerEmails" type="array" required>
+  Array of customer email addresses to assign the device to. Must contain at least one valid email.
+</ParamField>
+
+<ParamField body="autoCreateDevice" type="boolean" default={false}>
+  If `true`, creates the device automatically if it doesn't exist in the system. Defaults to `false`.
+</ParamField>
+
+## Response
+
+<ResponseField name="success" type="boolean">
+  Indicates if the operation was successful
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Description of the operation result
+</ResponseField>
+
+<ResponseField name="deviceId" type="string">
+  The unique device ID in the Telemetron system
+</ResponseField>
+
+<ResponseField name="deviceWasCreated" type="boolean">
+  Indicates whether the device was created during this operation (only present if autoCreateDevice was true)
+</ResponseField>
+
+<ResponseField name="assignedCustomers" type="array">
+  Array of customer objects that were assigned the device
+  
+  <Expandable title="Customer Object">
+    <ResponseField name="email" type="string">
+      Customer's email address
+    </ResponseField>
+    
+    <ResponseField name="customerId" type="string">
+      The customer's unique identifier
+    </ResponseField>
+    
+    <ResponseField name="wasCreated" type="boolean">
+      Indicates if this customer was created during this operation
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Examples
+
+<RequestExample>
+
+```bash cURL - Assign to Existing Device
+curl -X POST https://admin.telemetron.ai/api/ext-v1/deviceAssignment/assignDeviceToOwners \
+  -H "x-api-key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "deviceIdentifier": "SN-12345-ABCDE",
+    "customerEmails": [
+      "john.doe@example.com",
+      "jane.smith@example.com"
+    ]
+  }'
+```
+
+```bash cURL - Auto-Create Device
+curl -X POST https://admin.telemetron.ai/api/ext-v1/deviceAssignment/assignDeviceToOwners \
+  -H "x-api-key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "deviceIdentifier": "SN-67890-FGHIJ",
+    "customerEmails": ["new.customer@example.com"],
+    "autoCreateDevice": true
+  }'
+```
+
+```javascript JavaScript
+const response = await fetch(
+  'https://admin.telemetron.ai/api/ext-v1/deviceAssignment/assignDeviceToOwners',
+  {
+    method: 'POST',
+    headers: {
+      'x-api-key': 'your_api_key_here',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      deviceIdentifier: 'SN-12345-ABCDE',
+      customerEmails: [
+        'john.doe@example.com',
+        'jane.smith@example.com'
+      ],
+      autoCreateDevice: false
+    })
+  }
+);
+
+const result = await response.json();
+```
+
+```python Python
+import requests
+
+response = requests.post(
+    'https://admin.telemetron.ai/api/ext-v1/deviceAssignment/assignDeviceToOwners',
+    headers={
+        'x-api-key': 'your_api_key_here',
+        'Content-Type': 'application/json'
+    },
+    json={
+        'deviceIdentifier': 'SN-12345-ABCDE',
+        'customerEmails': [
+            'john.doe@example.com',
+            'jane.smith@example.com'
+        ],
+        'autoCreateDevice': False
+    }
+)
+
+result = response.json()
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Success
+{
+  "success": true,
+  "message": "Successfully assigned device to 2 customer(s)",
+  "deviceId": "dev_a1b2c3d4e5f6",
+  "assignedCustomers": [
+    {
+      "email": "john.doe@example.com",
+      "customerId": "cust_111222333",
+      "wasCreated": false
+    },
+    {
+      "email": "jane.smith@example.com",
+      "customerId": "cust_444555666",
+      "wasCreated": true
+    }
+  ]
+}
+```
+
+```json Success - With Auto-Created Device
+{
+  "success": true,
+  "message": "Successfully assigned device to 1 customer(s)",
+  "deviceId": "dev_x1y2z3w4v5",
+  "deviceWasCreated": true,
+  "assignedCustomers": [
+    {
+      "email": "new.customer@example.com",
+      "customerId": "cust_777888999",
+      "wasCreated": true
+    }
+  ]
+}
+```
+
+```json Error - Device Not Found
+{
+  "error": "Device not found with the provided identifier. Set autoCreateDevice to true to create it automatically."
+}
+```
+
+```json Error - Invalid Emails
+{
+  "error": "No valid customer emails provided"
+}
+```
+
+</ResponseExample>
+
+## Status Codes
+
+| Code | Description |
+|------|-------------|
+| 200 | Device successfully assigned to customers |
+| 400 | Invalid request (missing required fields, invalid email array, or no valid emails) |
+| 401 | Invalid or missing API key |
+| 404 | Device not found (when autoCreateDevice is false) |
+| 500 | Internal server error |
+
+## Notes
+
+- **Multi-owner support**: A single device can be assigned to multiple customers, useful for shared devices or family accounts. When the device sends telemetry, all assigned customers can receive support.
+- **Automatic customer creation**: If a customer email doesn't exist in your telemetron account, a new customer record is automatically created
+- **Automatic device creation**: When `autoCreateDevice` is set to `true`, the device will be created if it doesn't exist
+- **Email validation**: Invalid or empty email addresses in the array are automatically skipped
+- **Email normalization**: All emails are automatically trimmed and converted to lowercase
+- **Idempotent operation**: Assigning a device that's already assigned to a customer will not create duplicate entries
+
+<Tip>
+  **Best Practice**: Call this endpoint immediately when a customer registers or purchases a device. This ensures that any telemetry sent from the device is immediately associated with the correct customer, enabling Telemetron to provide support from day one.
+</Tip>
+
