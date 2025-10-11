@@ -1,16 +1,12 @@
 ---
 title: 'Query Customer by Email'
 api: 'POST /api/ext-v1/customer/queryCustomer'
-description: 'Retrieve customer information by email address'
+description: 'Look up customer by email'
 ---
 
 ## Overview
 
-This endpoint allows you to query and retrieve customer information using their email address. This is useful when you need to look up a customer but only have their email.
-
-<Tip>
-  The response includes the `devices` array, showing all devices assigned to this customer. This is particularly useful for support scenarios where you need to see all devices sending telemetry for a specific customer.
-</Tip>
+Retrieves customer information by email address. Response includes assigned devices.
 
 ## Authentication
 
@@ -156,7 +152,7 @@ customer = response.json()
 
 ## Notes
 
-- The email lookup is case-insensitive
-- Only customers belonging to your organization will be returned
-- The `devices` array contains device identifiers that are assigned to this customer
+- Email lookup is case-insensitive
+- Returns only customers in your organization
+- `devices` array contains assigned device identifiers
 

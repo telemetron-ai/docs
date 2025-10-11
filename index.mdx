@@ -1,147 +1,173 @@
 ---
-title: "Welcome to Telemetron"
-description: "AI-powered customer support platform for hardware companies"
+title: "Telemetron API Documentation"
+description: "Sync devices and customers for AI-powered hardware support"
 ---
 
-## What is Telemetron?
+## What This API Does
 
-Telemetron is an AI-powered customer support platform designed specifically for hardware companies. It uses **telemetry data from your devices** to diagnose customer issues intelligently and provide exceptional support experiences through automated insights.
+Telemetron provides AI-powered support for hardware companies. This API lets you sync three things:
 
-<Info>
-  **For Hardware Companies**: These APIs allow you to keep your customer and device data synchronized with Telemetron. By maintaining this sync, Telemetron can automatically correlate telemetry data with the right customers and devices, enabling faster diagnosis and resolution of support issues.
-</Info>
+1. **Devices** - Your hardware products that send telemetry
+2. **Customers** - Your end users who own devices
+3. **Device Assignments** - Mappings that connect devices to customers
+
+When devices send telemetry to Telemetron, we use these mappings to identify which customer owns the device and provide intelligent support.
 
 <Card
-  title="Get Started"
+  title="Quickstart Guide"
   icon="rocket"
   href="/quickstart"
   horizontal
 >
-  Start using the Telemetron API in minutes
+  Complete integration in 3 steps
 </Card>
 
-## Key Features
+## Core Concepts
 
-<CardGroup cols={2}>
-  <Card
-    title="Customer Management"
-    icon="users"
-    href="/api-reference/customer/create-or-update"
-  >
-    Create, update, and query customer records with ease
-  </Card>
-  <Card
-    title="Device Assignment"
-    icon="microchip"
-    href="/api-reference/device/assign-device"
-  >
-    Track device ownership and assignments across your customer base
-  </Card>
-  <Card
-    title="API Integration"
-    icon="plug"
-    href="/api-reference/introduction"
-  >
-    RESTful API for seamless integration with your existing systems
-  </Card>
-  <Card
-    title="Multi-Owner Support"
-    icon="user-group"
-    href="/api-reference/device/assign-device"
-  >
-    Assign devices to multiple customers for shared or family accounts
-  </Card>
-</CardGroup>
+### 1. Devices
 
-## Core Capabilities
+**What they are**: Your hardware products (thermostats, sensors, gateways, etc.) that send telemetry data to Telemetron.
 
-### Customer Management
+**Device Identifier**: Each device has a unique identifier (serial number, MAC address, etc.) that you define.
 
-Keep your customer data synchronized with Telemetron:
+**Device Type**: A label describing the device category (e.g., "Thermostat", "Sensor", "Gateway").
 
-- **Create or Update Customers** - Sync customer records from your systems to Telemetron
-- **Query by Email** - Quickly find customers using their email address
-- **Retrieve Customer Details** - Get complete customer information including device assignments
-- **Auto-Creation** - Automatically create customer records during device assignments
+**In the API**: Devices are referenced by their `deviceIdentifier`. Device are created lazily through assignment to customers with `autoCreateDevice: true`.
 
-### Device Ownership Tracking
+### 2. Customers
 
-Maintain accurate device-to-customer mappings so Telemetron knows which telemetry belongs to which customer:
+**What they are**: Your end users who own or operate devices.
 
-- **Assign Devices** - Link devices to one or multiple customer owners
-- **Unassign Devices** - Remove device assignments when ownership changes
-- **Auto-Create Devices** - Optionally create device records on the fly
-- **Device History** - Track the complete ownership history of each device
+**Key identifier**: Email address (unique per organization).
 
-<Warning>
-  **Why Sync Matters**: When your devices send telemetry data to Telemetron, the platform uses the device-to-customer mappings you maintain via these APIs to automatically associate telemetry with the correct customers. This enables Telemetron to provide intelligent, context-aware support.
-</Warning>
+**Customer ID**: After creation, each customer gets a unique `telemetronCustomerId`.
 
-### Telemetry-Driven Support
+**In the API**: 
+- [Create or update customers](/api-reference/customer/create-or-update)
+- [Query by email](/api-reference/customer/query)
+- [Get by ID](/api-reference/customer/get-by-id)
 
-Telemetron leverages device telemetry to provide intelligent support:
+### 3. Device Assignments
 
-- **Automatic Issue Detection** - Telemetry data reveals device problems before customers report them
-- **Contextual Diagnosis** - Correlate device behavior with customer and usage context
-- **Proactive Support** - Reach out to customers before small issues become big problems
-- **Data-Driven Insights** - Understand patterns across your device fleet
+**What they are**: Mappings that connect devices to customers.
 
-## Use Cases
+**Purpose**: When a device sends telemetry, Telemetron uses these mappings to identify the customer and provide support.
 
-<AccordionGroup>
-  <Accordion title="Telemetry-Based Support">
-    When your devices send telemetry to Telemetron, the platform automatically identifies which customer owns the device and can provide intelligent support. Keep device assignments current so telemetry is always mapped to the right customer.
-  </Accordion>
-  
-  <Accordion title="Product Registration & Onboarding">
-    When customers register their devices, sync this information to Telemetron so that any telemetry data from that device is immediately associated with the correct customer account.
-  </Accordion>
-  
-  <Accordion title="Warranty and Support Management">
-    Maintain accurate device ownership records so Telemetron can provide targeted support based on both telemetry data and customer history.
-  </Accordion>
-  
-  <Accordion title="Family and Shared Devices">
-    Assign devices to multiple owners (family members, team members) so all relevant parties receive support notifications when telemetry indicates issues.
-  </Accordion>
-  
-  <Accordion title="Device Transfer">
-    Update device ownership when products are resold or reassigned, ensuring telemetry data and support communications go to the current owner.
-  </Accordion>
-</AccordionGroup>
+**Multi-owner support**: A single device can be assigned to multiple customers (family accounts, shared devices).
 
-## Getting Started
+**In the API**:
+- [Assign device to customers](/api-reference/device/assign-device)
+- [Unassign device from customer](/api-reference/device/unassign-device)
+
+<Tip>
+  **Flow**: Device sends telemetry → Telemetron looks up assignment → Identifies customer → Provides AI-powered support
+</Tip>
+
+## Integration Steps
 
 <Steps>
   <Step title="Get Your API Key">
-    Log into your Telemetron dashboard at [admin.telemetron.ai](https://admin.telemetron.ai) and generate an API key from the Settings page.
+    Log into [Dashboard](https://admin.telemetron.ai) → Settings → API Keys → Generate
   </Step>
   
-  <Step title="Make Your First API Call">
-    Start by creating a customer or querying existing customer data using our [Customer Management APIs](/api-reference/customer/create-or-update).
+  <Step title="Create Customer Records">
+    Use [Create/Update Customer](/api-reference/customer/create-or-update) to sync your customer database
   </Step>
   
-  <Step title="Assign Devices">
-    Link devices to customer owners using the [Device Assignment API](/api-reference/device/assign-device).
+  <Step title="Assign Devices to Customers">
+    Use [Assign Device](/api-reference/device/assign-device) to create device-to-customer mappings
+  </Step>
+  
+  <Step title="Telemetry Routes Automatically">
+    When devices send telemetry, Telemetron automatically identifies the customer and provides AI support
   </Step>
 </Steps>
 
-## API Overview
-
-Our API is organized into two main sections:
+## API Endpoints
 
 <CardGroup cols={2}>
-  <Card title="Customer APIs" icon="address-card">
-    - Create or Update Customer
-    - Query Customer by Email  
-    - Get Customer by ID
+  <Card 
+    title="Customer Management" 
+    icon="users"
+    href="/api-reference/customer/create-or-update"
+  >
+    - [Create or Update Customer](/api-reference/customer/create-or-update)
+    - [Query by Email](/api-reference/customer/query)
+    - [Get by ID](/api-reference/customer/get-by-id)
   </Card>
-  <Card title="Device APIs" icon="microchip">
-    - Assign Device to Owners
-    - Unassign Device from Owner
+  
+  <Card 
+    title="Device Assignments" 
+    icon="link"
+    href="/api-reference/device/assign-device"
+  >
+    - [Assign Device to Customers](/api-reference/device/assign-device)
+    - [Unassign Device](/api-reference/device/unassign-device)
   </Card>
 </CardGroup>
 
-<Note>
-  **Need help?** Contact our support team at [support@telemetron.ai](mailto:support@telemetron.ai) or visit the [API Reference](/api-reference/introduction) for detailed documentation.
-</Note>
+## Common Scenarios
+
+<AccordionGroup>
+  <Accordion title="Customer buys a device" icon="cart-shopping">
+    1. Customer completes purchase in your system
+    2. Call [Create Customer](/api-reference/customer/create-or-update) (if new customer)
+    3. Call [Assign Device](/api-reference/device/assign-device) with `autoCreateDevice: true` and `deviceType`
+    4. ✅ Telemetry from this device now routes to this customer
+  </Accordion>
+  
+  <Accordion title="Customer sells device to someone else" icon="right-left">
+    1. Call [Unassign Device](/api-reference/device/unassign-device) with old owner's email
+    2. Call [Create Customer](/api-reference/customer/create-or-update) for new owner (if needed)
+    3. Call [Assign Device](/api-reference/device/assign-device) with new owner's email
+    4. ✅ Telemetry now routes to new owner
+  </Accordion>
+  
+  <Accordion title="Family shares a device" icon="users">
+    1. Ensure all family members exist as customers
+    2. Call [Assign Device](/api-reference/device/assign-device) with array of all family member emails
+    3. ✅ All family members receive support alerts for this device
+  </Accordion>
+  
+  <Accordion title="Query customer's devices" icon="magnifying-glass">
+    1. Call [Query Customer](/api-reference/customer/query) with email
+    2. Response includes `devices` array with all assigned device identifiers
+    3. ✅ See all devices owned by this customer
+  </Accordion>
+</AccordionGroup>
+
+## Resources
+
+<CardGroup cols={2}>
+  <Card 
+    title="Quickstart Guide" 
+    icon="rocket"
+    href="/quickstart"
+  >
+    Step-by-step integration with code examples
+  </Card>
+  
+  <Card 
+    title="API Reference" 
+    icon="book"
+    href="/api-reference/introduction"
+  >
+    Complete endpoint documentation
+  </Card>
+  
+  <Card 
+    title="Dashboard" 
+    icon="gauge"
+    href="https://admin.telemetron.ai"
+  >
+    Generate API keys and view data
+  </Card>
+  
+  <Card 
+    title="Support" 
+    icon="headset"
+    href="mailto:support@telemetron.ai"
+  >
+    Get help from our team
+  </Card>
+</CardGroup>

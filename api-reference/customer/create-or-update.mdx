@@ -1,19 +1,16 @@
 ---
 title: 'Create or Update Customer'
 api: 'POST /api/ext-v1/customer/createOrUpdateCustomer'
-description: 'Create a new customer or update an existing customer by ID'
+description: 'Create or update customer records'
 ---
 
 ## Overview
 
-This endpoint allows you to sync customer information to Telemetron. The behavior depends on whether you provide a `telemetronCustomerId`:
+Creates or updates customer records in Telemetron.
 
-- **Without `telemetronCustomerId`**: Creates a new customer or returns an error if the email already exists
-- **With `telemetronCustomerId`**: Updates the existing customer with the provided ID
-
-<Info>
-  **Sync Your Customer Data**: Keep customer information in Telemetron up-to-date so the platform can provide personalized support. When combined with device assignments, this enables Telemetron to correlate telemetry data with customer context for intelligent issue diagnosis.
-</Info>
+**Behavior:**
+- **Without `telemetronCustomerId`**: Creates new customer (409 error if email exists)
+- **With `telemetronCustomerId`**: Updates existing customer
 
 ## Authentication
 

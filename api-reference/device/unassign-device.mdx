@@ -1,15 +1,15 @@
 ---
 title: 'Unassign Device from Owner'
 api: 'POST /api/ext-v1/deviceAssignment/unassignDeviceFromOwner'
-description: 'Remove a device assignment from a specific customer owner'
+description: 'Remove device-to-customer assignment'
 ---
 
 ## Overview
 
-This endpoint removes a device assignment from a specific customer. The device and customer records remain in the system, but the association between them is removed.
+Removes the device-to-customer assignment. Both records remain in the system; only the association is removed.
 
 <Warning>
-  **Telemetry Impact**: After unassigning a device, any telemetry sent from this device will no longer be associated with this customer. Make sure to reassign the device to a new owner if the device is still in use.
+  After unassignment, device telemetry will no longer route to this customer. Reassign to new owner if device is still active.
 </Warning>
 
 ## Authentication
@@ -160,20 +160,17 @@ result = response.json()
 
 ## Notes
 
-- **Email validation**: The endpoint validates email format before processing
-- **Customer persistence**: The customer record is not deleted, only the device assignment is removed
-- **Device persistence**: The device record remains in the system
-- **Remaining devices**: The response includes a list of devices still assigned to the customer, allowing you to track their current device inventory
-- **Non-destructive**: This operation only removes the association; it does not delete the device or customer records
+- Email format is validated before processing
+- Non-destructive: customer and device records persist
+- Response includes `devicesRemaining` array for tracking
 
-## Use Cases
+## Common Use Cases
 
-- **Device returns**: When a customer returns or replaces a device, unassign it so telemetry is no longer routed to them
-- **Warranty transfers**: When transferring a device warranty to a different customer, unassign from the old owner first
-- **Device ownership changes**: When a device is transferred from one customer to another (unassign from old owner, then assign to new owner)
-- **Account cleanup**: When removing old or inactive devices from a customer's account
+- **Device returns/replacements**: Stop routing telemetry to this customer
+- **Ownership transfer**: Unassign from old owner, then assign to new owner
+- **Account cleanup**: Remove inactive devices from customer accounts
 
 <Tip>
-  **Device Transfers**: To transfer a device from one customer to another, first call this unassign endpoint, then immediately call the [Assign Device](/api-reference/device/assign-device) endpoint with the new owner's email. This ensures telemetry is routed to the correct customer without any gaps.
+  **Transfer Pattern**: Unassign from old owner → Assign to new owner. See [Assign Device](/api-reference/device/assign-device).
 </Tip>
 

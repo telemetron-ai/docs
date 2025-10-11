@@ -1,16 +1,17 @@
 ---
 title: 'Assign Device to Owners'
 api: 'POST /api/ext-v1/deviceAssignment/assignDeviceToOwners'
-description: 'Assign a device to one or multiple customer owners'
+description: 'Create device-to-customer mappings'
 ---
 
 ## Overview
 
-This endpoint allows you to assign a single device to one or multiple customers (owners). If the customers don't exist, they will be automatically created. Optionally, you can also auto-create the device if it doesn't exist in your telemetron account.
+Assigns a device to one or more customers. Creates the mapping for telemetry correlation.
 
-<Info>
-  **Why this matters**: When you assign a device to a customer, you're creating the mapping that allows Telemetron to correlate device telemetry with the correct customer account. This enables Telemetron to provide intelligent, context-aware support based on real device behavior.
-</Info>
+**Features:**
+- Auto-creates customers if they don't exist
+- Supports multi-owner assignments (shared/family devices)
+- Optional auto-create for devices (requires `deviceType`)
 
 ## Authentication
 
@@ -30,6 +31,10 @@ This endpoint allows you to assign a single device to one or multiple customers 
 
 <ParamField body="autoCreateDevice" type="boolean" default={false}>
   If `true`, creates the device automatically if it doesn't exist in the system. Defaults to `false`.
+</ParamField>
+
+<ParamField body="deviceType" type="string">
+  **Required when `autoCreateDevice` is `true`**. Specifies the device type (e.g., "Thermostat", "Sensor", "Gateway"). This field is mandatory for creating new devices.
 </ParamField>
 
 ## Response
@@ -92,7 +97,8 @@ curl -X POST https://admin.telemetron.ai/api/ext-v1/deviceAssignment/assignDevic
   -d '{
     "deviceIdentifier": "SN-67890-FGHIJ",
     "customerEmails": ["new.customer@example.com"],
-    "autoCreateDevice": true
+    "autoCreateDevice": true,
+    "deviceType": "Thermostat"
   }'
 ```
 
@@ -111,7 +117,8 @@ const response = await fetch(
         'john.doe@example.com',
         'jane.smith@example.com'
       ],
-      autoCreateDevice: false
+      autoCreateDevice: true,
+      deviceType: 'Thermostat'  // Required when autoCreateDevice is true
     })
   }
 );
@@ -134,7 +141,8 @@ response = requests.post(
             'john.doe@example.com',
             'jane.smith@example.com'
         ],
-        'autoCreateDevice': False
+        'autoCreateDevice': True,
+        'deviceType': 'Thermostat'  # Required when autoCreateDevice is True
     }
 )
 
@@ -187,6 +195,12 @@ result = response.json()
 }
 ```
 
+```json Error - Missing Device Type
+{
+  "error": "deviceType is required when creating a new device"
+}
+```
+
 ```json Error - Invalid Emails
 {
   "error": "No valid customer emails provided"
@@ -205,16 +219,15 @@ result = response.json()
 | 404 | Device not found (when autoCreateDevice is false) |
 | 500 | Internal server error |
 
-## Notes
+## Implementation Notes
 
-- **Multi-owner support**: A single device can be assigned to multiple customers, useful for shared devices or family accounts. When the device sends telemetry, all assigned customers can receive support.
-- **Automatic customer creation**: If a customer email doesn't exist in your telemetron account, a new customer record is automatically created
-- **Automatic device creation**: When `autoCreateDevice` is set to `true`, the device will be created if it doesn't exist
-- **Email validation**: Invalid or empty email addresses in the array are automatically skipped
-- **Email normalization**: All emails are automatically trimmed and converted to lowercase
-- **Idempotent operation**: Assigning a device that's already assigned to a customer will not create duplicate entries
+- **Multi-owner support**: Assign a single device to multiple customers for shared/family accounts
+- **Auto-create customers**: Non-existent customers are automatically created using email prefix as name
+- **Auto-create devices**: Set `autoCreateDevice: true` and provide `deviceType` to create devices on-the-fly
+- **Email handling**: Emails are trimmed, lowercased, and validated. Invalid emails are skipped
+- **Idempotent**: Re-assigning an already-assigned device won't create duplicates
 
-<Tip>
-  **Best Practice**: Call this endpoint immediately when a customer registers or purchases a device. This ensures that any telemetry sent from the device is immediately associated with the correct customer, enabling Telemetron to provide support from day one.
-</Tip>
+<Warning>
+  **Required**: When `autoCreateDevice` is `true`, you **must** provide `deviceType` or the request will fail with a 400 error.
+</Warning>
 

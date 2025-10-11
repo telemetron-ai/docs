@@ -1,16 +1,12 @@
 ---
 title: 'Get Customer by ID'
 api: 'GET /api/ext-v1/customer/getCustomer/{telemetronCustomerId}'
-description: 'Retrieve customer information using their unique customer ID'
+description: 'Retrieve customer by ID'
 ---
 
 ## Overview
 
-This endpoint retrieves detailed customer information using their unique Telemetron customer ID. This is the most direct way to fetch customer data when you already have their ID.
-
-<Info>
-  The response includes all devices assigned to this customer. This helps you understand which devices are sending telemetry associated with this customer account.
-</Info>
+Retrieves customer information by their Telemetron customer ID. Response includes assigned devices.
 
 ## Authentication
 
@@ -149,7 +145,7 @@ customer = response.json()
 
 ## Notes
 
-- Only customers belonging to your organization can be retrieved
-- The customer ID must be a valid UUID format
-- Use the [Query Customer by Email](/api-reference/customer/query) endpoint if you only have the customer's email address
+- Returns only customers in your organization
+- Customer ID must be valid UUID
+- Use [Query by Email](/api-reference/customer/query) if you don't have the ID
 

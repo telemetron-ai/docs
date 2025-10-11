@@ -1,15 +1,11 @@
 ---
 title: 'API Reference'
-description: 'Telemetron External API documentation for customer and device management'
+description: 'RESTful API for syncing customer and device data with Telemetron'
 ---
 
-## Welcome to Telemetron API
+## Telemetron External API (ext-v1)
 
-The Telemetron External API (ext-v1) provides programmatic access to synchronize customer and device data with Telemetron. This API is designed for **hardware companies** who use Telemetron's AI-powered support platform.
-
-<Info>
-  **Why these APIs exist**: Telemetron uses telemetry data from your devices to diagnose customer issues intelligently. These APIs allow you to keep customer and device ownership information synchronized with Telemetron, enabling the platform to automatically correlate incoming telemetry with the correct customers and provide context-aware support.
-</Info>
+Synchronize customer and device ownership data to enable Telemetron to correlate device telemetry with customers for AI-powered support.
 
 ## Base URL
 
@@ -19,88 +15,65 @@ https://admin.telemetron.ai/api/ext-v1
 
 ## Authentication
 
-All API endpoints require authentication using an API key. Include your API key in the request headers:
+All requests require an API key in the `x-api-key` header:
 
-```
+```bash
 x-api-key: your_api_key_here
 ```
 
-### Getting Your API Key
+**Get your API key**: Dashboard → Settings → API Keys → Generate
 
-1. Log into your Telemetron dashboard
-2. Navigate to Settings > API Keys
-3. Generate a new API key for your organization
+<Warning>Never expose API keys in client-side code or commit them to version control.</Warning>
 
-<Warning>
-  Keep your API keys secure and never expose them in client-side code or public repositories.
-</Warning>
-
-## API Overview
-
-The Telemetron API is organized around REST principles and consists of two main resource groups:
+## Endpoints
 
 ### Customer Management
-Sync your customer data with Telemetron so the platform knows who your customers are when their devices send telemetry:
-- Create or update customers
-- Query customers by email
-- Retrieve customer details by ID
+- `POST /customer/createOrUpdateCustomer` - Create or update customer records
+- `POST /customer/queryCustomer` - Query customer by email
+- `GET /customer/getCustomer/{id}` - Get customer by ID
 
 ### Device Assignment
-Maintain device-to-customer mappings so Telemetron can associate telemetry data with the correct customer accounts:
-- Assign devices to customer owners
-- Unassign devices from customer owners
+- `POST /deviceAssignment/assignDeviceToOwners` - Assign device to one or more customers
+- `POST /deviceAssignment/unassignDeviceFromOwner` - Remove device assignment
 
-<Warning>
-  **Keep Data Synchronized**: For Telemetron to provide accurate, intelligent support, it's essential to keep your customer and device mappings up-to-date. When a customer registers a device, transfers ownership, or makes account changes, sync these updates to Telemetron immediately.
-</Warning>
+<Tip>Keep mappings synchronized. Update Telemetron immediately when customers register devices or transfer ownership.</Tip>
 
 ## Response Format
 
-All API responses return JSON with consistent structure:
+All responses are JSON. Success responses include `success: true`, error responses include `error` field.
 
-**Success Response:**
+**Success:**
 ```json
 {
   "success": true,
-  "message": "Operation completed successfully",
+  "message": "Operation completed",
   "data": { }
 }
 ```
 
-**Error Response:**
+**Error:**
 ```json
 {
   "error": "Error description"
 }
 ```
 
-## Error Codes
+## HTTP Status Codes
 
-| Status Code | Description |
-|------------|-------------|
+| Code | Meaning |
+|------|---------|
 | 200 | Success |
-| 400 | Bad Request - Invalid parameters |
-| 401 | Unauthorized - Invalid or missing API key |
-| 404 | Not Found - Resource doesn't exist |
-| 409 | Conflict - Resource already exists |
-| 500 | Internal Server Error |
+| 400 | Bad request (invalid/missing parameters) |
+| 401 | Unauthorized (invalid/missing API key) |
+| 404 | Resource not found |
+| 409 | Conflict (duplicate resource) |
+| 500 | Server error |
 
-## How It Works
+## How Device-Customer Mapping Works
 
-<Steps>
-  <Step title="Your devices send telemetry">
-    Your hardware devices send telemetry data (metrics, logs, events) to Telemetron's telemetry ingestion endpoints.
-  </Step>
-  
-  <Step title="Telemetron maps telemetry to customers">
-    Using the device-to-customer mappings you maintain via these APIs, Telemetron identifies which customer owns each device sending telemetry.
-  </Step>
-  
-  <Step title="AI-powered diagnosis">
-    Telemetron's AI analyzes the telemetry data in the context of the customer, device history, and patterns to diagnose issues intelligently.
-  </Step>
-  
-  <Step title="Intelligent support">
-    Telemetron provides proactive support, automated responses, or alerts your support team with actionable insights about customer issues.
-  </Step>
-</Steps>
+1. **Device sends telemetry** → Telemetron receives device data
+2. **Mapping lookup** → Uses your synced mappings to identify the customer
+3. **AI diagnosis** → Analyzes telemetry in customer context
+4. **Intelligent support** → Provides proactive support or alerts your team
+
+**Bottom line**: Keep mappings current so telemetry reaches the right customers.

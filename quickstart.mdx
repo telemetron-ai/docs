@@ -1,15 +1,13 @@
 ---
 title: "Quickstart Guide"
-description: "Get started with the Telemetron API in minutes"
+description: "Integrate Telemetron API in 3 steps"
 ---
 
-<Info>
-  **Who is this for?** Hardware companies using Telemetron for AI-powered customer support. These APIs help you keep your customer and device data synchronized with Telemetron, enabling the platform to correlate telemetry data with customers for intelligent issue diagnosis.
-</Info>
+## Overview
 
-## Get Started in Three Steps
+Sync customer and device data to enable Telemetron's AI-powered support. Complete setup in minutes.
 
-This guide will walk you through syncing your customer and device data with Telemetron. Once synchronized, when your devices send telemetry to Telemetron, the platform can automatically identify which customer owns each device and provide intelligent, proactive support.
+**Goal**: Create device-to-customer mappings so telemetry reaches the right customers.
 
 ### Step 1: Get Your API Key
 
@@ -34,11 +32,11 @@ This guide will walk you through syncing your customer and device data with Tele
   </Accordion>
 </AccordionGroup>
 
-### Step 2: Sync Your First Customer
+### Step 2: Create Customer Record
 
 <AccordionGroup>
-  <Accordion icon="user-plus" title="Sync a customer to Telemetron">
-    Use the Create or Update Customer endpoint to sync customer information to Telemetron. This ensures that when the customer's devices send telemetry, Telemetron knows who the customer is:
+  <Accordion icon="user-plus" title="Create or update customer">
+    Sync customer information to Telemetron:
 
     <CodeGroup>
     ```bash cURL
@@ -100,8 +98,8 @@ This guide will walk you through syncing your customer and device data with Tele
     <Tip>Save the `telemetronCustomerId` from the response - you'll need it for device assignments!</Tip>
   </Accordion>
 
-  <Accordion icon="magnifying-glass" title="Query existing customers">
-    If you're not sure if a customer exists, query them by email:
+  <Accordion icon="magnifying-glass" title="Check if customer exists">
+    Query by email to check existence:
 
     ```bash
     curl -X POST https://admin.telemetron.ai/api/ext-v1/customer/queryCustomer \
@@ -110,15 +108,15 @@ This guide will walk you through syncing your customer and device data with Tele
       -d '{"email": "john.doe@example.com"}'
     ```
 
-    This will return the full customer record if found, including all assigned devices.
+    Returns full customer record including assigned devices.
   </Accordion>
 </AccordionGroup>
 
-### Step 3: Link Devices to Customers
+### Step 3: Map Devices to Customers
 
 <AccordionGroup>
-  <Accordion icon="microchip" title="Create device-to-customer mapping">
-    Link devices to their customer owners. This is critical: when devices send telemetry to Telemetron, these mappings tell the platform which customer owns each device, enabling accurate diagnosis and targeted support.
+  <Accordion icon="microchip" title="Assign device to customer">
+    Create the device-to-customer mapping for telemetry routing:
 
     <CodeGroup>
     ```bash cURL
@@ -128,7 +126,8 @@ This guide will walk you through syncing your customer and device data with Tele
       -d '{
         "deviceIdentifier": "SN-12345-ABCDE",
         "customerEmails": ["john.doe@example.com"],
-        "autoCreateDevice": true
+        "autoCreateDevice": true,
+        "deviceType": "Thermostat"
       }'
     ```
 
@@ -144,7 +143,8 @@ This guide will walk you through syncing your customer and device data with Tele
         body: JSON.stringify({
           deviceIdentifier: 'SN-12345-ABCDE',
           customerEmails: ['john.doe@example.com'],
-          autoCreateDevice: true
+          autoCreateDevice: true,
+          deviceType: 'Thermostat'
         })
       }
     );
@@ -165,7 +165,8 @@ This guide will walk you through syncing your customer and device data with Tele
         json={
             'deviceIdentifier': 'SN-12345-ABCDE',
             'customerEmails': ['john.doe@example.com'],
-            'autoCreateDevice': True
+            'autoCreateDevice': True,
+            'deviceType': 'Thermostat'
         }
     )
     
@@ -175,56 +176,38 @@ This guide will walk you through syncing your customer and device data with Tele
     </CodeGroup>
 
     <Info>
-      Set `autoCreateDevice: true` to automatically create the device if it doesn't exist yet. 
-      You can assign a device to multiple customers by adding more emails to the `customerEmails` array.
+      Set `autoCreateDevice: true` to automatically create the device if it doesn't exist. When using this option, you **must** provide `deviceType`. You can assign a device to multiple customers by adding more emails to the `customerEmails` array.
     </Info>
   </Accordion>
 </AccordionGroup>
 
-<Warning>
-  **Critical for Telemetry**: Once this mapping is established, any telemetry data sent from device `SN-12345-ABCDE` will be automatically associated with `john.doe@example.com`, allowing Telemetron to provide intelligent support based on real device behavior.
-</Warning>
+<Tip>
+  **Result**: Telemetry from `SN-12345-ABCDE` now routes to `john.doe@example.com` for AI-powered support.
+</Tip>
 
-## Common Workflows
+## Integration Patterns
 
 <CardGroup cols={2}>
   <Card title="Product Registration" icon="clipboard-list">
-    **Scenario**: A customer registers a product they purchased
-    
-    1. Query if customer exists by email
-    2. Create customer if not found
-    3. Assign device to customer with `autoCreateDevice: true`
-    
-    **Result**: Telemetry from this device is now linked to this customer
-  </Card>
-
-  <Card title="Telemetry-Based Diagnosis" icon="chart-line">
-    **Scenario**: Device telemetry shows an issue
-    
-    1. Your device sends telemetry to Telemetron
-    2. Telemetron uses device-customer mapping to identify owner
-    3. Telemetron provides AI-powered diagnosis and reaches out to customer
-    
-    **Result**: Proactive support before customer reports issue
+    1. Query/create customer
+    2. Assign device (`autoCreateDevice: true`)
+    3. ✅ Telemetry linked
   </Card>
 
   <Card title="Device Transfer" icon="right-left">
-    **Scenario**: A customer sells their device to someone else
-    
-    1. Unassign device from original owner
-    2. Create or query new owner
-    3. Assign device to new owner
-    
-    **Result**: Telemetry now routes to the new owner's support account
+    1. Unassign from old owner
+    2. Assign to new owner
+    3. ✅ Telemetry rerouted
   </Card>
 
-  <Card title="Family Accounts" icon="users">
-    **Scenario**: Multiple family members share a device
-    
-    1. Ensure all family members have customer records
-    2. Assign the device to multiple customer emails
-    
-    **Result**: All family members get support alerts based on device telemetry
+  <Card title="Family Devices" icon="users">
+    1. Create all family member records
+    2. Assign device to multiple emails
+    3. ✅ All owners get alerts
+  </Card>
+
+  <Card title="Proactive Support" icon="chart-line">
+    Device telemetry → Mapping → Customer ID → AI diagnosis → Support
   </Card>
 </CardGroup>
 
@@ -252,33 +235,12 @@ Now that you've made your first API calls, explore the full capabilities:
 
 ## Best Practices
 
-<AccordionGroup>
-  <Accordion title="API Key Security">
-    - Store API keys in environment variables, never in code
-    - Use different API keys for development and production
-    - Rotate API keys regularly
-    - Never expose API keys in client-side code
-  </Accordion>
-
-  <Accordion title="Error Handling">
-    - Always check response status codes
-    - Handle 404 errors for customers/devices not found
-    - Handle 409 conflicts for duplicate customers
-    - Implement retry logic for 500 errors
-  </Accordion>
-
-  <Accordion title="Device Identifiers">
-    - Use consistent device identifiers (serial numbers, MAC addresses)
-    - Ensure device identifiers are unique across your product line
-    - Consider using standardized formats for easy validation
-  </Accordion>
-
-  <Accordion title="Rate Limiting">
-    - Implement appropriate rate limiting in your application
-    - Batch operations where possible
-    - Cache customer data when appropriate
-  </Accordion>
-</AccordionGroup>
+| Category | Recommendations |
+|----------|-----------------|
+| **API Keys** | Store in env vars • Use separate keys for dev/prod • Rotate regularly • Never commit to code |
+| **Error Handling** | Check status codes • Handle 404/409/500 appropriately • Implement retry logic |
+| **Device IDs** | Use consistent identifiers • Ensure uniqueness • Standardize format |
+| **Performance** | Batch operations • Cache when appropriate • Implement rate limiting |
 
 <Note>
   **Need help?** Contact [support@telemetron.ai](mailto:support@telemetron.ai) or check out our detailed [API Reference](/api-reference/introduction).
